@@ -270,6 +270,8 @@ List<List<Cell>> generate(
   // Remove inner walls
   maze.forEach((row) {
     row.forEach((cell) {
+      //bos maze icin hepsi false olmali
+
       if(cell.x == 0 && cell.y == 0){
         cell.bottom=false;
         cell.right=false;

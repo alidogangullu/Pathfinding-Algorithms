@@ -8,6 +8,8 @@ import 'package:vector_math/vector_math.dart' as vectorMath;
 class MazeDriverCanvas extends CustomPainter {
   List<Map<String, dynamic>> points = [];
 
+  List<Cell> solutionPath;
+
   Color color = Colors.black;
   var index = 0;
   var offset = 0;
@@ -39,6 +41,8 @@ class MazeDriverCanvas extends CustomPainter {
 
   /// Constructor
   MazeDriverCanvas({
+    required this.solutionPath,
+
     /// <-- The animation controller
     required this.controller,
 
@@ -84,6 +88,22 @@ class MazeDriverCanvas extends CustomPainter {
   }
 
   void draw(Canvas canvas, Size size) {
-    ///
+    // Draw the maze
+    mazeMap!.update(canvas);
+
+    // Draw the solution path on top of the maze
+    if (solutionPath.isNotEmpty) {
+      _paint.color = Colors.red;
+      _paint.strokeWidth = 4.0;
+      for (int i = 0; i < solutionPath.length - 1; i++) {
+        Cell current = solutionPath[i];
+        Cell next = solutionPath[i + 1];
+        canvas.drawLine(
+          Offset(current.x * blockSize, current.y * blockSize),
+          Offset(next.x * blockSize, next.y * blockSize),
+          _paint,
+        );
+      }
+    }
   }
 }
