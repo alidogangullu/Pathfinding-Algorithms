@@ -273,61 +273,46 @@ List<List<Cell>> generate(
       //bos maze icin hepsi false olmali
 
       if(cell.x == 0 && cell.y == 0){
-        cell.bottom=false;
-        cell.right=false;
+        cell.bottom=false; //AD
+        cell.right=false; //AB
       }
       if(cell.x == 0 && cell.y == 1){
-        cell.top = false;
-        cell.right = false;
+        cell.top = false; //AD
+        cell.right = false; //DE
+        cell.bottom = false; //DG
       }
       if(cell.x == 1 && cell.y == 0){
-        cell.bottom=false;
-        cell.left=false;
-        cell.right=false;
+        cell.bottom=false; //BE
+        cell.left=false; //AB
+        cell.right=false; //BC
       }
       if(cell.x == 1 && cell.y == 1){
-        cell.top = false;
-        cell.left=false;
-        cell.right=false;
-        cell.bottom=false;
+        cell.top = false; //BE
+        cell.left=false; //DE
+        cell.right=false; //EF
+        cell.bottom=false; //EH
       }
       if(cell.x == 2 && cell.y == 0){
-        cell.bottom=false;
-        cell.left=false;
+        cell.bottom=false; //CF
+        cell.left=false; //BC
       }
       if(cell.x == 2 && cell.y == 1){
-        cell.top = false;
-        cell.bottom = false;
-        cell.left = false;
-      }
-      if(cell.x == 0 && cell.y == 1){
-        cell.bottom=false;
-        cell.top=false;
-        cell.right=false;
+        cell.top = false; //CF
+        cell.bottom = false; //FI
+        cell.left = false; //EF
       }
       if(cell.x == 0 && cell.y == 2){
-        cell.top = false;
-        cell.right = false;
-      }
-      if(cell.x == 1 && cell.y == 1){
-        cell.bottom=false;
-        cell.right=false;
-        cell.left=false;
-        cell.top=false;
+        cell.top = false; //DG
+        cell.right = false; //GH
       }
       if(cell.x == 1 && cell.y == 2){
-        cell.top = false;
-        cell.left = false;
-        cell.right = false;
-      }
-      if(cell.x == 2 && cell.y == 1){
-        cell.bottom=false;
-        cell.top=false;
-        cell.left=false;
+        cell.top = false; //EH
+        cell.left = false; //GH
+        cell.right = false; //HI
       }
       if(cell.x == 2 && cell.y == 2){
-        cell.top = false;
-        cell.left = false;
+        cell.top = false; //FI
+        cell.left = false; //HI
       }
     });
   });

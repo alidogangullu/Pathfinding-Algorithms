@@ -39,8 +39,12 @@ class MazeDriverCanvas extends CustomPainter {
   MazeDrawer? mazeMap;
   //
 
+  List<Cell> expandedCells;
+
   /// Constructor
   MazeDriverCanvas({
+    required this.expandedCells,
+
     required this.solutionPath,
 
     /// <-- The animation controller
@@ -90,6 +94,24 @@ class MazeDriverCanvas extends CustomPainter {
   void draw(Canvas canvas, Size size) {
     // Draw the maze
     mazeMap!.update(canvas);
+
+    // Set up the paint for filling expanded cells
+    _paint.color = Colors.blue; // Color for expanded cells
+    _paint.style = PaintingStyle.fill; // Set the paint style to fill
+
+    // Draw expanded cells
+    for (Cell cell in expandedCells) {
+      // Calculate the rectangle bounds
+      Rect cellRect = Rect.fromLTWH(
+          cell.x * blockSize,
+          cell.y * blockSize,
+          blockSize.toDouble(),
+          blockSize.toDouble()
+      );
+
+      // Draw the filled rectangle for the expanded cell
+      canvas.drawRect(cellRect, _paint);
+    }
 
     // Draw the solution path on top of the maze
     if (solutionPath.isNotEmpty) {
