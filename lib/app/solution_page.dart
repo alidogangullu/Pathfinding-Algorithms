@@ -1,4 +1,4 @@
-import 'package:se420/a_star.dart';
+import 'package:se420/algorithms.dart';
 import 'package:se420/maze_driver.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -6,15 +6,25 @@ import 'package:maze_builder/maze_builder.dart';
 import 'dart:ui' as ui;
 
 class SolutionScreen extends StatefulWidget {
-  SolutionScreen({super.key, required this.title, required this.maze});
+  const SolutionScreen(
+      {super.key,
+      required this.title,
+      required this.maze,
+      required this.isUniformCost,
+      required this.startCell,
+      required this.goalCell});
   final String title;
-  List<List<Cell>> maze;
+  final List<List<Cell>> maze;
+  final Cell startCell;
+  final Cell goalCell;
+  final bool isUniformCost;
 
   @override
   State<SolutionScreen> createState() => _SolutionScreenState();
 }
 
-class _SolutionScreenState extends State<SolutionScreen> with TickerProviderStateMixin {
+class _SolutionScreenState extends State<SolutionScreen>
+    with TickerProviderStateMixin {
   late AnimationController _controller;
   List<Cell> solutionPath = [];
   List<Cell> expandedCells = [];
@@ -28,6 +38,9 @@ class _SolutionScreenState extends State<SolutionScreen> with TickerProviderStat
   @override
   void initState() {
     super.initState();
+
+    print(widget.goalCell.x);
+    print(widget.goalCell.y);
 
     _controller =
         AnimationController(vsync: this, duration: const Duration(seconds: 1));
@@ -52,32 +65,38 @@ class _SolutionScreenState extends State<SolutionScreen> with TickerProviderStat
       return;
     }
 
-    // Create an AStarSolver instance and find the solution
-    AStarSolver aStarSolver = AStarSolver(widget.maze);
-    solutionPath = aStarSolver.solutionPath;
-    expandedCells = aStarSolver.expandedCells;
+    if (widget.isUniformCost) {
+      UniformCostSolver uniformCostSolver = UniformCostSolver(widget.maze,widget.startCell,widget.goalCell);
+      solutionPath = uniformCostSolver.solutionPath;
+      expandedCells = uniformCostSolver.expandedCells;
+    } else {
+      // Create an AStarSolver instance and find the solution
+      AStarSolver aStarSolver = AStarSolver(widget.maze,widget.startCell,widget.goalCell);
+      solutionPath = aStarSolver.solutionPath;
+      expandedCells = aStarSolver.expandedCells;
+    }
 
     // Check if a solution was found
     if (solutionPath.isNotEmpty) {
       solutionFound = true;
       // Calculate the cost
-      solutionCost = aStarSolver.calculateSolutionCost(solutionPath);
+      solutionCost = calculateSolutionCost(solutionPath);
     } else {
       solutionFound = false;
     }
 
-    solveButtonClicked = true;
-    // Trigger a repaint to update the UI with the solution
-    setState(() {});
+    setState(() {
+      solveButtonClicked = true;
+    });
   }
 
   void showOneByOneNext() {
     setState(() {
       if (partOfExpandedCells.isEmpty) {
         partOfExpandedCells.add(expandedCells.first);
-      } else if (partOfExpandedCells.length != expandedCells.length){
+      } else if (partOfExpandedCells.length != expandedCells.length) {
         int i = partOfExpandedCells.length + 1;
-        partOfExpandedCells = expandedCells.sublist(0,i);
+        partOfExpandedCells = expandedCells.sublist(0, i);
       }
       if (partOfExpandedCells.length == expandedCells.length) {
         showSolution = true;
@@ -125,6 +144,8 @@ class _SolutionScreenState extends State<SolutionScreen> with TickerProviderStat
                   key: UniqueKey(),
                   isComplex: true,
                   painter: MazeDriverCanvas(
+                    startCell: widget.startCell,
+                    goalCell: widget.goalCell,
                     expandedCells: [],
                     solutionPath: [],
                     controller: _controller,
@@ -148,6 +169,8 @@ class _SolutionScreenState extends State<SolutionScreen> with TickerProviderStat
                         key: UniqueKey(),
                         isComplex: true,
                         painter: MazeDriverCanvas(
+                          startCell: widget.startCell,
+                          goalCell: widget.goalCell,
                           expandedCells: partOfExpandedCells,
                           controller: _controller,
                           maze: widget.maze,

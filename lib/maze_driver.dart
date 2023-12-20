@@ -6,6 +6,8 @@ import 'dart:ui' as ui;
 import 'package:vector_math/vector_math.dart' as vectorMath;
 
 class MazeDriverCanvas extends CustomPainter {
+  Cell? startCell;
+  Cell? goalCell;
   List<Map<String, dynamic>> points = [];
 
   List<Cell> solutionPath;
@@ -44,8 +46,9 @@ class MazeDriverCanvas extends CustomPainter {
   /// Constructor
   MazeDriverCanvas({
     required this.expandedCells,
-
     required this.solutionPath,
+    required this.startCell,
+    required this.goalCell,
 
     /// <-- The animation controller
     required this.controller,
@@ -185,6 +188,31 @@ class MazeDriverCanvas extends CustomPainter {
           _paint,
         );
       }
+    }
+    // Draw the source cell in red
+    if (startCell != null) {
+      _paint.color = Colors.red;
+      _paint.style = PaintingStyle.fill;
+      Rect sourceRect = Rect.fromLTWH(
+        startCell!.x * blockSize,
+        startCell!.y * blockSize,
+        blockSize.toDouble(),
+        blockSize.toDouble(),
+      );
+      canvas.drawRect(sourceRect, _paint);
+    }
+
+    // Draw the goal cell in green
+    if (goalCell != null) {
+      _paint.color = Colors.green;
+      _paint.style = PaintingStyle.fill;
+      Rect goalRect = Rect.fromLTWH(
+        goalCell!.x * blockSize,
+        goalCell!.y * blockSize,
+        blockSize.toDouble(),
+        blockSize.toDouble(),
+      );
+      canvas.drawRect(goalRect, _paint);
     }
   }
 }

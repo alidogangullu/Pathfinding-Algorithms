@@ -21,17 +21,36 @@ class _MazeEditState extends State<MazeEdit> with TickerProviderStateMixin {
   String selectedCell = '0,0'; // Default selected cell
   String selectedDirection = 'top'; // Default selected wall direction
 
+  String selectedSource = 'A'; // Default to 'A'
+  String selectedGoal = 'I'; // Default to 'I'
+  late Cell startCell;
+  late Cell goalCell;
+  Map<String, String> coordinateToNameMapping= {
+    '0,0': 'A', '1,0': 'B', '2,0': 'C',
+    '0,1': 'D', '1,1': 'E', '2,1': 'F',
+    '0,2': 'G', '1,2': 'H', '2,2': 'I',
+  };
+  late List<DropdownMenuItem<String>> nodeItems;
+
   @override
   Widget build(BuildContext context) {
     Map<String, String> cellNames = {
-      '0,0': 'A', '0,1': 'B', '0,2': 'C',
-      '1,0': 'D', '1,1': 'E', '1,2': 'F',
-      '2,0': 'G', '2,1': 'H', '2,2': 'I',
+      '0,0': 'A',
+      '0,1': 'B',
+      '0,2': 'C',
+      '1,0': 'D',
+      '1,1': 'E',
+      '1,2': 'F',
+      '2,0': 'G',
+      '2,1': 'H',
+      '2,2': 'I',
     };
 
     List<DropdownMenuItem<String>> cellItems = cellNames.entries
-        .map((entry) => DropdownMenuItem(value: entry.key, child: Text('Cell ${entry.value}')))
+        .map((entry) => DropdownMenuItem(
+            value: entry.key, child: Text('Cell ${entry.value}')))
         .toList();
+
     // Dropdown menu items for directions
     List<DropdownMenuItem<String>> directionItems = [
       const DropdownMenuItem(value: 'top', child: Text('Top')),
@@ -54,7 +73,8 @@ class _MazeEditState extends State<MazeEdit> with TickerProviderStateMixin {
             children: [
               DecoratedBox(
                 decoration: BoxDecoration(
-                    color: Colors.lightGreen, //background color of dropdown button
+                    color:
+                        Colors.lightGreen, //background color of dropdown button
                     border: Border.all(
                         color: Colors.black38,
                         width: 2), //border of dropdown button
@@ -63,7 +83,8 @@ class _MazeEditState extends State<MazeEdit> with TickerProviderStateMixin {
                     boxShadow: const <BoxShadow>[
                       //apply shadow on Dropdown button
                       BoxShadow(
-                          color: Color.fromRGBO(0, 0, 0, 0.57), //shadow for button
+                          color:
+                              Color.fromRGBO(0, 0, 0, 0.57), //shadow for button
                           blurRadius: 5) //blur radius of shadow
                     ]),
                 child: Padding(
@@ -79,10 +100,11 @@ class _MazeEditState extends State<MazeEdit> with TickerProviderStateMixin {
                   ),
                 ),
               ),
-              const SizedBox(width:10),
+              const SizedBox(width: 10),
               DecoratedBox(
                 decoration: BoxDecoration(
-                    color: Colors.lightGreen, //background color of dropdown button
+                    color:
+                        Colors.lightGreen, //background color of dropdown button
                     border: Border.all(
                         color: Colors.black38,
                         width: 3), //border of dropdown button
@@ -91,7 +113,8 @@ class _MazeEditState extends State<MazeEdit> with TickerProviderStateMixin {
                     boxShadow: const <BoxShadow>[
                       //apply shadow on Dropdown button
                       BoxShadow(
-                          color: Color.fromRGBO(0, 0, 0, 0.57), //shadow for button
+                          color:
+                              Color.fromRGBO(0, 0, 0, 0.57), //shadow for button
                           blurRadius: 5) //blur radius of shadow
                     ]),
                 child: DropdownButton<String>(
@@ -105,11 +128,11 @@ class _MazeEditState extends State<MazeEdit> with TickerProviderStateMixin {
                   },
                 ),
               ),
-              const SizedBox(width:20),
+              const SizedBox(width: 20),
               ElevatedButton(
                 onPressed: () => addWall(),
                 style: ElevatedButton.styleFrom(
-                  primary: Colors.blue, // Change the box color
+                  backgroundColor: Colors.blue, // Change the box color
                 ),
                 child: const Text(
                   'Add wall', // Change the text
@@ -120,20 +143,92 @@ class _MazeEditState extends State<MazeEdit> with TickerProviderStateMixin {
               ),
             ],
           ),
+          const SizedBox(
+            height: 8,
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              DecoratedBox(
+                decoration: BoxDecoration(
+                    color: Colors.lightGreen, //background color of dropdown button
+                    border: Border.all(
+                        color: Colors.black38,
+                        width: 2), //border of dropdown button
+                    borderRadius: BorderRadius.circular(
+                        50), //border radius of dropdown button
+                    boxShadow: const <BoxShadow>[
+                      //apply shadow on Dropdown button
+                      BoxShadow(
+                          color: Color.fromRGBO(0, 0, 0, 0.57), //shadow for button
+                          blurRadius: 5) //blur radius of shadow
+                    ]),
+                child: Padding(
+                  padding: const EdgeInsets.all(5.0),
+                  child: DropdownButton<String>(
+                    value: selectedSource,
+                    items: nodeItems,
+                    onChanged: (value) {
+                      setState(() {
+                        selectedSource = value!;
+                        saveSelections();
+                      });
+                    },
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              // Goal Node Dropdown
+              DecoratedBox(
+                decoration: BoxDecoration(
+                    color: Colors.lightGreen, //background color of dropdown button
+                    border: Border.all(
+                        color: Colors.black38,
+                        width: 2), //border of dropdown button
+                    borderRadius: BorderRadius.circular(
+                        50), //border radius of dropdown button
+                    boxShadow: const <BoxShadow>[
+                      //apply shadow on Dropdown button
+                      BoxShadow(
+                          color: Color.fromRGBO(0, 0, 0, 0.57), //shadow for button
+                          blurRadius: 5) //blur radius of shadow
+                    ]),
+                child: Padding(
+                  padding: const EdgeInsets.all(5.0),
+                  child: DropdownButton<String>(
+                    value: selectedGoal,
+                    items: nodeItems,
+                    onChanged: (value) {
+                      setState(() {
+                        selectedGoal = value!;
+                        saveSelections();
+                      });
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ),
           const SizedBox(height: 8,),
           ElevatedButton(
             onPressed: () {
               // Navigate to ScreenB when the button is pressed.
-              Navigator.push(context, MaterialPageRoute(builder: (context) => SolutionScreen(title: "Solution", maze: maze)));
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      SolutionScreen(title: "Solution", maze: maze, isUniformCost: false, startCell: startCell, goalCell: goalCell, ),
+                ),
+              );
             },
             style: ElevatedButton.styleFrom(
-              primary: Colors.red, // Change the box color
+              backgroundColor: Colors.red, // Change the box color
             ),
             child: const Text(
               'Solve', // Change the text
               style: TextStyle(
                   color: Colors.white, fontSize: 20 // Change the text color
-              ),
+                  ),
             ),
           ),
         ],
@@ -150,6 +245,8 @@ class _MazeEditState extends State<MazeEdit> with TickerProviderStateMixin {
                   key: UniqueKey(),
                   isComplex: true,
                   painter: MazeDriverCanvas(
+                    startCell: startCell,
+                    goalCell: goalCell,
                     expandedCells: [],
                     solutionPath: [],
                     controller: _controller,
@@ -194,8 +291,8 @@ class _MazeEditState extends State<MazeEdit> with TickerProviderStateMixin {
     }
 
     // Check if there's already an entry for the selected cell in userWalls
-    Map<String, dynamic>? existingEntry = userWalls.firstWhereOrNull(
-            (wall) => wall['x'] == x && wall['y'] == y);
+    Map<String, dynamic>? existingEntry =
+        userWalls.firstWhereOrNull((wall) => wall['x'] == x && wall['y'] == y);
 
     if (existingEntry != null) {
       // Update the existing entry with the new wall
@@ -220,12 +317,47 @@ class _MazeEditState extends State<MazeEdit> with TickerProviderStateMixin {
       _controller.repeat();
       generateMaze();
     });
+
+    // Create dropdown menu items for source and goal node
+    nodeItems = coordinateToNameMapping.entries
+        .map((entry) => DropdownMenuItem(value: entry.value, child: Text(entry.value)))
+        .toList();
   }
 
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+
+  void saveSelections() {
+    // Find the coordinates for the selected source cell
+    String? sourceCoordinatesKey = coordinateToNameMapping.entries
+        .firstWhereOrNull((entry) => entry.value == selectedSource)
+        ?.key;
+    if (sourceCoordinatesKey != null) {
+      var sourceCoordinates = sourceCoordinatesKey.split(',');
+      int sourceX = int.parse(sourceCoordinates[0]);
+      int sourceY = int.parse(sourceCoordinates[1]);
+      startCell = maze[sourceY][sourceX];
+    }
+
+    // Find the coordinates for the selected goal cell
+    String? goalCoordinatesKey = coordinateToNameMapping.entries
+        .firstWhereOrNull((entry) => entry.value == selectedGoal)
+        ?.key;
+    if (goalCoordinatesKey != null) {
+      var goalCoordinates = goalCoordinatesKey.split(',');
+      int goalX = int.parse(goalCoordinates[0]);
+      int goalY = int.parse(goalCoordinates[1]);
+      goalCell = maze[goalY][goalX];
+    }
+
+    // Update the state and trigger a repaint
+    setState(() {
+      // This call to setState will update the UI with the new startCell and goalCell
+      // and also trigger a repaint of the CustomPaint widget.
+    });
   }
 
   void generateMazeBasedOnUserInput() {
@@ -281,6 +413,8 @@ class _MazeEditState extends State<MazeEdit> with TickerProviderStateMixin {
 
     setState(() {
       maze = localMaze;
+      startCell = maze[0][0];
+      goalCell =  maze[2][2];
     });
   }
 }
