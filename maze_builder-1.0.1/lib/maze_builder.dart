@@ -258,10 +258,10 @@ List<List<Cell>> generate(
       return Cell(
         x: x.toDouble(),
         y: y.toDouble(),
-        top: true || y > 0,
-        left: true || x > 0,
-        bottom: true || y < (height - 1),
-        right: true || x < (width - 1),
+        top: true,
+        left: true,
+        bottom: true,
+        right: true,
         set: 0,
       );
     }).toList();
@@ -278,8 +278,8 @@ List<List<Cell>> generate(
       }
       if(cell.x == 0 && cell.y == 1){
         cell.top = false; //AD
-        cell.right = false; //DE
-        cell.bottom = false; //DG
+        //cell.right = false; //DE
+        //cell.bottom = false; //DG
       }
       if(cell.x == 1 && cell.y == 0){
         cell.bottom=false; //BE
@@ -288,7 +288,7 @@ List<List<Cell>> generate(
       }
       if(cell.x == 1 && cell.y == 1){
         cell.top = false; //BE
-        cell.left=false; //DE
+        //cell.left=false; //DE
         cell.right=false; //EF
         cell.bottom=false; //EH
       }
@@ -302,7 +302,7 @@ List<List<Cell>> generate(
         cell.left = false; //EF
       }
       if(cell.x == 0 && cell.y == 2){
-        cell.top = false; //DG
+        //cell.top = false; //DG
         cell.right = false; //GH
       }
       if(cell.x == 1 && cell.y == 2){

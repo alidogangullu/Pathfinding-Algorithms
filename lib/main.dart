@@ -38,11 +38,12 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   late AnimationController _controller;
   List<Cell> solutionPath = [];
   List<Cell> expandedCells = [];
+  int solutionCost = 0;
+
+  List<Cell> partOfExpandedCells = [];
   bool solveButtonClicked = false;
-
-  double solutionCost = 0.0;
   bool solutionFound = false;
-
+  bool showSolution = false;
 
   @override
   void initState() {
@@ -63,15 +64,8 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     super.dispose();
   }
 
-  void onNodeExpanded(Cell cell) {
-    setState(() {
-      expandedCells.add(cell);
-    });
-  }
-
   /// Solve the maze using A* algorithm
   Future<void> solveMaze() async {
-
     expandedCells.clear();
 
     // Ensure that the maze is generated before solving
@@ -81,13 +75,14 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
 
     // Create an AStarSolver instance and find the solution
     AStarSolver aStarSolver = AStarSolver(maze);
-    solutionPath = await aStarSolver.findPath(onNodeExpanded);
+    solutionPath = aStarSolver.solutionPath;
+    expandedCells = aStarSolver.expandedCells;
 
     // Check if a solution was found
     if (solutionPath.isNotEmpty) {
       solutionFound = true;
       // Calculate the cost
-      solutionCost = calculateSolutionCost(solutionPath);
+      solutionCost = aStarSolver.calculateSolutionCost(solutionPath);
     } else {
       solutionFound = false;
     }
@@ -96,29 +91,6 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     // Trigger a repaint to update the UI with the solution
     setState(() {});
   }
-
-  double calculateSolutionCost(List<Cell> path) {
-    // Implement the logic to calculate the cost of the path
-    // For example, summing the costs of each move
-    double cost = 0.0;
-    for (int i = 0; i < path.length - 1; i++) {
-      cost += cellCost(path[i], path[i + 1]);
-    }
-    return cost;
-  }
-
-  double cellCost(Cell a, Cell b) {
-    // Check if the move is horizontal (right or left)
-    if (a.y == b.y) {
-      return 2.0; // Cost for moving right or left
-    }
-    // Check if the move is vertical (up or down)
-    if (a.x == b.x) {
-      return 1.0; // Cost for moving up or down
-    }
-    return 0.0; // Return 0.0 if it's neither (which should not happen in a valid maze)
-  }
-
 
   /// Generate the maze
   void generateMaze() {
@@ -131,6 +103,24 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     });
   }
 
+  void showOneByOneNext() {
+    setState(() {
+      if (partOfExpandedCells.isEmpty) {
+        partOfExpandedCells.add(expandedCells.first);
+      } else if (partOfExpandedCells.length != expandedCells.length){
+        int i = partOfExpandedCells.length + 1;
+        partOfExpandedCells = expandedCells.sublist(0,i);
+      }
+      if (partOfExpandedCells.length == expandedCells.length) {
+        showSolution = true;
+      }
+    });
+  }
+
+  void showOneByOnePrevious() {
+    //gerekli mi ki
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -138,10 +128,22 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
         title: Text(widget.title),
         backgroundColor: Colors.black,
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: solveMaze,
-        backgroundColor: Colors.green,
-        child: const Icon(Icons.play_arrow),
+      floatingActionButton: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          if (solutionFound)
+            FloatingActionButton(
+              onPressed: showOneByOneNext,
+              backgroundColor: Colors.blue,
+              child: const Icon(Icons.arrow_forward),
+            ),
+          const SizedBox(width: 8),
+          FloatingActionButton(
+            onPressed: solveMaze,
+            backgroundColor: Colors.green,
+            child: const Icon(Icons.play_arrow),
+          ),
+        ],
       ),
       body: Container(
         color: Colors.black,
@@ -178,22 +180,23 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                         key: UniqueKey(),
                         isComplex: true,
                         painter: MazeDriverCanvas(
-                          expandedCells: expandedCells,
+                          expandedCells: partOfExpandedCells,
                           controller: _controller,
                           maze: maze,
                           blockSize: 75,
                           width: MediaQuery.of(context).size.width,
                           height: MediaQuery.of(context).size.height,
-                          solutionPath: solutionPath,
+                          solutionPath: showSolution ? solutionPath : [],
                         ),
                       ),
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 35.0),
-                    child: Text("Solution Cost: $solutionCost",
-                        style: TextStyle(color: Colors.white)),
-                  ),
+                  if (showSolution)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 35.0),
+                      child: Text("Solution Cost: $solutionCost",
+                          style: const TextStyle(color: Colors.white)),
+                    ),
                 ],
               ),
             if (!solutionFound && solveButtonClicked)
@@ -212,16 +215,19 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
 
 class AStarSolver {
   List<List<Cell>> maze;
+  List<Cell> solutionPath = [];
+  List<Cell> expandedCells = [];
 
-  AStarSolver(this.maze);
+  AStarSolver(this.maze) {
+    solutionPath = findPath();
+  }
 
-  Future<List<Cell>> findPath(Function(Cell) onExpand) async {
+  List<Cell> findPath() {
     // A* algorithm implementation
 
     // Define start and goal cells
     Cell startCell = maze.first.first;
     Cell goalCell = maze.last.last;
-    int expandedNodes = 0;
 
     // Define a priority queue for open set
     var openSet = PriorityQueue<Node>();
@@ -236,10 +242,9 @@ class AStarSolver {
     // Define a map for tracking paths
     Map<Cell, Cell?> cameFrom = {startCell: null};
 
-    while (openSet.isNotEmpty && expandedNodes < 10) {
+    while (openSet.isNotEmpty && expandedCells.length < 10) {
       var current = openSet.removeFirst().cell;
-      expandedNodes++;
-      onExpand(current);
+      expandedCells.add(current);
 
       // Goal check
       if (current == goalCell) break;
@@ -248,15 +253,16 @@ class AStarSolver {
       for (var next in getNeighbors(current)) {
         double newCost = costSoFar[current]! + cellCost(current, next);
 
-        if (!costSoFar.containsKey(next) || newCost < costSoFar[next]!) {
+        if (!costSoFar.containsKey(next)) {
           costSoFar[next] = newCost;
-          double priority = newCost + manhattanDistance(next, goalCell);
-          openSet.add(Node(cell: next, cost: newCost, heuristic: priority));
+          openSet.add(Node(
+              cell: next,
+              cost: cellCost(current, next),
+              heuristic: manhattanDistance(next, goalCell)));
           cameFrom[next] = current;
         }
       }
     }
-
     // Reconstruct path
     return reconstructPath(cameFrom, startCell, goalCell);
   }
@@ -271,7 +277,7 @@ class AStarSolver {
     while (current != start && current != null) {
       // Adjust the cell's coordinates to the center
       Cell centeredCell = Cell(
-        x: current!.x + cellSize / 2,
+        x: current.x + cellSize / 2,
         y: current.y + cellSize / 2,
         top: current.top,
         left: current.left,
@@ -302,25 +308,22 @@ class AStarSolver {
     return path.reversed.toList();
   }
 
-
   double manhattanDistance(Cell a, Cell b) {
-    print((a.x - b.x).abs() + (a.y - b.y).abs());
     return (a.x - b.x).abs() + (a.y - b.y).abs();
   }
 
-  double cellCost(Cell a, Cell b) {
+  int cellCost(Cell a, Cell b) {
     // Check if the move is horizontal (right or left)
     if (a.y == b.y) {
-      return 2.0; // Cost for moving right or left
+      return 2; // Cost for moving right or left
     }
     // Check if the move is vertical (up or down)
     if (a.x == b.x) {
-      return 1.0; // Cost for moving up or down
+      return 1; // Cost for moving up or down
     }
     // This condition should never happen in a 4-directional grid
     throw Exception("Invalid move detected");
   }
-
 
   Iterable<Cell> getNeighbors(Cell cell) {
     List<Cell> neighbors = [];
@@ -349,17 +352,27 @@ class AStarSolver {
 
     return neighbors;
   }
+
+  int calculateSolutionCost(List<Cell> path) {
+    // Implement the logic to calculate the cost of the path
+    // For example, summing the costs of each move
+    int cost = 0;
+    for (int i = 0; i < path.length - 1; i++) {
+      cost += cellCost(path[i], path[i + 1]);
+    }
+    return cost;
+  }
 }
 
 class Node implements Comparable<Node> {
   final Cell cell;
-  final double cost;
+  final int cost;
   final double heuristic;
 
   Node({required this.cell, required this.cost, required this.heuristic});
 
   @override
   int compareTo(Node other) {
-    return (this.cost + this.heuristic).compareTo(other.cost + other.heuristic);
+    return (cost + heuristic).compareTo(other.cost + other.heuristic);
   }
 }
