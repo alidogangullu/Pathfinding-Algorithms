@@ -284,7 +284,7 @@ class _MazeEditState extends State<MazeEdit> with TickerProviderStateMixin {
           children: [
             Center(
               child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 35),
+                padding: const EdgeInsets.fromLTRB(0,80,25,0),
                 child: CustomPaint(
                   size: const ui.Size(200, 200),
                   key: UniqueKey(),

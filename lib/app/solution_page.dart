@@ -45,6 +45,8 @@ class _SolutionScreenState extends State<SolutionScreen>
     SchedulerBinding.instance.addPostFrameCallback((_) {
       _controller.repeat();
     });
+
+    solveMaze();
   }
 
   @override
@@ -117,52 +119,27 @@ class _SolutionScreenState extends State<SolutionScreen>
         children: [
           if (solutionFound)
             FloatingActionButton(
-              heroTag: "btn1",
               onPressed: showOneByOneNext,
               backgroundColor: Colors.blue,
               child: const Icon(Icons.arrow_forward),
             ),
-          const SizedBox(width: 8),
-          FloatingActionButton(
-            heroTag: "btn2",
-            onPressed: solveMaze,
-            backgroundColor: Colors.green,
-            child: const Icon(Icons.play_arrow),
-          ),
         ],
       ),
       body: Container(
         color: Colors.black,
-        child: Column(
-          children: [
-            Center(
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 35),
-                child: CustomPaint(
-                  size: const ui.Size(200, 200),
-                  key: UniqueKey(),
-                  isComplex: true,
-                  painter: MazeDriverCanvas(
-                    startCell: widget.startCell,
-                    goalCell: widget.goalCell,
-                    expandedCells: [],
-                    solutionPath: [],
-                    controller: _controller,
-                    maze: widget.maze,
-                    blockSize: 75,
-                    //solution: this.mazeSolution,
-                    width: MediaQuery.of(context).size.width,
-                    height: MediaQuery.of(context).size.height,
-                  ),
-                ),
-              ),
-            ),
-            if (solutionFound)
-              Column(
-                children: [
-                  Center(
-                    child: Container(
-                      padding: const EdgeInsets.only(top: 100),
+        child: Padding(
+          padding: const EdgeInsets.only(right: 25),
+          child: Column(
+            children: [
+              Center(
+                child: Column(
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.only(top: 20),
+                      child: Text("Maze:", style: TextStyle(color: Colors.white, fontSize: 16),),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(vertical: 20),
                       child: CustomPaint(
                         size: const ui.Size(200, 200),
                         key: UniqueKey(),
@@ -170,33 +147,65 @@ class _SolutionScreenState extends State<SolutionScreen>
                         painter: MazeDriverCanvas(
                           startCell: widget.startCell,
                           goalCell: widget.goalCell,
-                          expandedCells: partOfExpandedCells,
+                          expandedCells: [],
+                          solutionPath: [],
                           controller: _controller,
                           maze: widget.maze,
                           blockSize: 75,
+                          //solution: this.mazeSolution,
                           width: MediaQuery.of(context).size.width,
                           height: MediaQuery.of(context).size.height,
-                          solutionPath: showSolution ? solutionPath : [],
                         ),
                       ),
                     ),
-                  ),
-                  if (showSolution)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 35.0),
-                      child: Text("Solution Cost: $solutionCost",
-                          style: const TextStyle(color: Colors.white)),
-                    ),
-                ],
-              ),
-            if (!solutionFound && solveButtonClicked)
-              const Center(
-                child: Text(
-                  "No Solution",
-                  style: TextStyle(color: Colors.red),
+                  ],
                 ),
-              )
-          ],
+              ),
+              if (solutionFound)
+                const Padding(
+                  padding: EdgeInsets.only(top: 50.0),
+                  child: Text("Solution:", style: TextStyle(color: Colors.white, fontSize: 16),),
+                ),
+                Column(
+                  children: [
+                    Center(
+                      child: Container(
+                        padding: const EdgeInsets.only(top: 20),
+                        child: CustomPaint(
+                          size: const ui.Size(200, 200),
+                          key: UniqueKey(),
+                          isComplex: true,
+                          painter: MazeDriverCanvas(
+                            startCell: widget.startCell,
+                            goalCell: widget.goalCell,
+                            expandedCells: partOfExpandedCells,
+                            controller: _controller,
+                            maze: widget.maze,
+                            blockSize: 75,
+                            width: MediaQuery.of(context).size.width,
+                            height: MediaQuery.of(context).size.height,
+                            solutionPath: showSolution ? solutionPath : [],
+                          ),
+                        ),
+                      ),
+                    ),
+                    if (showSolution)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 35.0),
+                        child: Text("Solution Cost: $solutionCost",
+                            style: const TextStyle(color: Colors.white)),
+                      ),
+                  ],
+                ),
+              if (!solutionFound && solveButtonClicked)
+                const Center(
+                  child: Text(
+                    "No Solution",
+                    style: TextStyle(color: Colors.red),
+                  ),
+                )
+            ],
+          ),
         ),
       ),
     );
