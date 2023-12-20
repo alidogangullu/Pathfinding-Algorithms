@@ -15,8 +15,8 @@ class SolutionScreen extends StatefulWidget {
       required this.goalCell});
   final String title;
   final List<List<Cell>> maze;
-  final Cell startCell;
-  final Cell goalCell;
+  final Cell? startCell;
+  final Cell? goalCell;
   final bool isUniformCost;
 
   @override
@@ -38,9 +38,6 @@ class _SolutionScreenState extends State<SolutionScreen>
   @override
   void initState() {
     super.initState();
-
-    print(widget.goalCell.x);
-    print(widget.goalCell.y);
 
     _controller =
         AnimationController(vsync: this, duration: const Duration(seconds: 1));
@@ -66,12 +63,12 @@ class _SolutionScreenState extends State<SolutionScreen>
     }
 
     if (widget.isUniformCost) {
-      UniformCostSolver uniformCostSolver = UniformCostSolver(widget.maze,widget.startCell,widget.goalCell);
+      UniformCostSolver uniformCostSolver = UniformCostSolver(widget.maze,widget.startCell!,widget.goalCell!);
       solutionPath = uniformCostSolver.solutionPath;
       expandedCells = uniformCostSolver.expandedCells;
     } else {
       // Create an AStarSolver instance and find the solution
-      AStarSolver aStarSolver = AStarSolver(widget.maze,widget.startCell,widget.goalCell);
+      AStarSolver aStarSolver = AStarSolver(widget.maze,widget.startCell!,widget.goalCell!);
       solutionPath = aStarSolver.solutionPath;
       expandedCells = aStarSolver.expandedCells;
     }
@@ -93,7 +90,7 @@ class _SolutionScreenState extends State<SolutionScreen>
   void showOneByOneNext() {
     setState(() {
       if (partOfExpandedCells.isEmpty) {
-        partOfExpandedCells.add(expandedCells.first);
+        partOfExpandedCells = expandedCells.sublist(0, 2);
       } else if (partOfExpandedCells.length != expandedCells.length) {
         int i = partOfExpandedCells.length + 1;
         partOfExpandedCells = expandedCells.sublist(0, i);
@@ -120,12 +117,14 @@ class _SolutionScreenState extends State<SolutionScreen>
         children: [
           if (solutionFound)
             FloatingActionButton(
+              heroTag: "btn1",
               onPressed: showOneByOneNext,
               backgroundColor: Colors.blue,
               child: const Icon(Icons.arrow_forward),
             ),
           const SizedBox(width: 8),
           FloatingActionButton(
+            heroTag: "btn2",
             onPressed: solveMaze,
             backgroundColor: Colors.green,
             child: const Icon(Icons.play_arrow),

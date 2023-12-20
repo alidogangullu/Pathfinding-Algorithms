@@ -179,6 +179,48 @@ class UniformCostSolver {
   }
 
   List<Cell> findPath() {
+    // uniformCost algorithm implementation
+
+    // Define a priority queue for open set
+    var openSet = PriorityQueue<UniformNode>();
+    openSet.add(UniformNode(
+        cell: startCell,
+        cost: 0,));
+
+    // Define a map for tracking costs to reach each cell
+    Map<Cell, double> costSoFar = {startCell: 0};
+
+    // Define a map for tracking paths
+    Map<Cell, Cell?> cameFrom = {startCell: null};
+
+    while (openSet.isNotEmpty && expandedCells.length < 10) {
+      var current = openSet.removeFirst().cell;
+      expandedCells.add(current);
+
+      // Goal check
+      if (current == goalCell) break;
+
+      // Explore neighbors
+      for (var next in getNeighbors(current)) {
+        double newCost = costSoFar[current]! + cellCost(current, next);
+
+        if (!costSoFar.containsKey(next)) {
+          costSoFar[next] = newCost;
+          openSet.add(UniformNode(
+              cell: next,
+              cost: cellCost(current, next),
+              ));
+          cameFrom[next] = current;
+        }
+      }
+    }
+    // Reconstruct path
+    return reconstructPath(cameFrom, startCell, goalCell);
+  }
+
+  /*
+
+  List<Cell> findPath() {
     // Uniform Cost Search implementation
 
     // Define a priority queue for the open set
@@ -213,22 +255,46 @@ class UniformCostSolver {
     // Reconstruct path
     return reconstructPath(cameFrom, startCell, goalCell);
   }
+   */
 
   List<Cell> reconstructPath(Map<Cell, Cell?> cameFrom, Cell start, Cell goal) {
     List<Cell> path = [];
     Cell? current = goal;
 
+    // Assuming each cell is a square of size `cellSize`
+    double cellSize = 1.0; // Replace 1.0 with the actual size of a cell
+
     while (current != start && current != null) {
-      path.add(current);
+      // Adjust the cell's coordinates to the center
+      Cell centeredCell = Cell(
+        x: current.x + cellSize / 2,
+        y: current.y + cellSize / 2,
+        top: current.top,
+        left: current.left,
+        bottom: current.bottom,
+        right: current.right,
+      );
+
+      path.add(centeredCell);
       current = cameFrom[current];
     }
+
+    // Adjust the start cell's coordinates to the center
+    Cell centeredStartCell = Cell(
+      x: start.x + cellSize / 2,
+      y: start.y + cellSize / 2,
+      top: start.top,
+      left: start.left,
+      bottom: start.bottom,
+      right: start.right,
+    );
 
     if (current == null) {
       // No valid path to the start cell was found
       return [];
     }
 
-    path.add(start);
+    path.add(centeredStartCell);
     return path.reversed.toList();
   }
 
@@ -286,7 +352,7 @@ int cellCost(Cell a, Cell b) {
 
 class UniformNode implements Comparable<UniformNode> {
   final Cell cell;
-  final double cost;
+  final int cost;
 
   UniformNode({required this.cell, required this.cost});
 

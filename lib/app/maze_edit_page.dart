@@ -22,9 +22,13 @@ class _MazeEditState extends State<MazeEdit> with TickerProviderStateMixin {
   String selectedDirection = 'top'; // Default selected wall direction
 
   String selectedSource = 'A'; // Default to 'A'
-  String selectedGoal = 'I'; // Default to 'I'
-  late Cell startCell;
-  late Cell goalCell;
+  String selectedGoal = 'I';// Default to 'I'
+
+  String selectedAlgorithm = 'A* Algorithm';
+  bool isUniformCost = false;
+
+  Cell? startCell;
+  Cell? goalCell;
   Map<String, String> coordinateToNameMapping= {
     '0,0': 'A', '1,0': 'B', '2,0': 'C',
     '0,1': 'D', '1,1': 'E', '2,1': 'F',
@@ -67,6 +71,47 @@ class _MazeEditState extends State<MazeEdit> with TickerProviderStateMixin {
       floatingActionButton: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
+          DecoratedBox(
+            decoration: BoxDecoration(
+                color: Colors.lightGreen, //background color of dropdown button
+                border: Border.all(
+                    color: Colors.black38,
+                    width: 2), //border of dropdown button
+                borderRadius: BorderRadius.circular(
+                    50), //border radius of dropdown button
+                boxShadow: const <BoxShadow>[
+                  //apply shadow on Dropdown button
+                  BoxShadow(
+                      color: Color.fromRGBO(0, 0, 0, 0.57), //shadow for button
+                      blurRadius: 5) //blur radius of shadow
+                ]),
+            child: Padding(
+              padding: const EdgeInsets.all(5.0),
+              child: DropdownButton<String>(
+                value: selectedAlgorithm,
+                items: <String>[
+                  'A* Algorithm',
+                  'Uniform Cost',
+                ].map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    selectedAlgorithm = value!;
+                    if(selectedAlgorithm == 'A* Algorithm'){
+                      isUniformCost = false;
+                    } else if (selectedAlgorithm == 'Uniform Cost'){
+                      isUniformCost = true;
+                    }
+                  });
+                },
+              ),
+            ),
+          ),
+          const SizedBox(height: 12,),
           Row(
             verticalDirection: VerticalDirection.down,
             mainAxisAlignment: MainAxisAlignment.center,
@@ -143,9 +188,7 @@ class _MazeEditState extends State<MazeEdit> with TickerProviderStateMixin {
               ),
             ],
           ),
-          const SizedBox(
-            height: 8,
-          ),
+          const SizedBox(height: 12,),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -177,8 +220,10 @@ class _MazeEditState extends State<MazeEdit> with TickerProviderStateMixin {
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
-              // Goal Node Dropdown
+              const Padding(
+                padding: EdgeInsets.all(8.0),
+                child: Text("to", style: TextStyle(color: Colors.white, fontSize: 16),),
+              ),
               DecoratedBox(
                 decoration: BoxDecoration(
                     color: Colors.lightGreen, //background color of dropdown button
@@ -217,7 +262,7 @@ class _MazeEditState extends State<MazeEdit> with TickerProviderStateMixin {
                 context,
                 MaterialPageRoute(
                   builder: (context) =>
-                      SolutionScreen(title: "Solution", maze: maze, isUniformCost: false, startCell: startCell, goalCell: goalCell, ),
+                      SolutionScreen(title: "$selectedAlgorithm Solution", maze: maze, isUniformCost: isUniformCost, startCell: startCell, goalCell: goalCell, ),
                 ),
               );
             },
@@ -304,6 +349,8 @@ class _MazeEditState extends State<MazeEdit> with TickerProviderStateMixin {
 
     // Regenerate the maze with the new wall configuration
     generateMazeBasedOnUserInput();
+
+    saveSelections();
   }
 
   @override
