@@ -250,6 +250,33 @@ List<List<Cell>> generate(
   height = width;
 
   List<List<Cell>> maze = [];
+
+  // Populate maze with cells, setting specific walls for edge cells.
+  for (var y = 0; y < height; y++) {
+    var row = List.generate(width, (x) {
+      // Default walls set to false
+      bool topWall = false, leftWall = false, bottomWall = false, rightWall = false;
+
+      // Setting specific walls for border cells
+      if (y == 0) topWall = true;         // Top edge
+      if (x == 0) leftWall = true;        // Left edge
+      if (y == height - 1) bottomWall = true; // Bottom edge
+      if (x == width - 1) rightWall = true;   // Right edge
+
+      return Cell(
+        x: x.toDouble(),
+        y: y.toDouble(),
+        top: topWall,
+        left: leftWall,
+        bottom: bottomWall,
+        right: rightWall,
+        set: 0,
+      );
+    });
+    maze.add(row);
+  }
+
+  /*
   var r = range(width.toDouble());
 
   // Populate maze with empty cells:
@@ -267,6 +294,7 @@ List<List<Cell>> generate(
     }).toList();
     maze.add(row);
   }
+
   // Remove inner walls
   maze.forEach((row) {
     row.forEach((cell) {
@@ -316,6 +344,6 @@ List<List<Cell>> generate(
       }
     });
   });
-
+   */
   return maze;
 }

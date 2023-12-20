@@ -73,6 +73,7 @@ class MazeDriverCanvas extends CustomPainter {
     mazeMap = MazeDrawer(maze: maze, blockSize: blockSize);
   }
 
+  /*
   @override
   void paint(Canvas canvas, Size size) {
     this.canvas = canvas;
@@ -81,6 +82,64 @@ class MazeDriverCanvas extends CustomPainter {
 
     mazeMap!.update(canvas);
   }
+   */
+
+  void paint(Canvas canvas, Size size) {
+    this.canvas = canvas;
+
+    paintImage(canvas, size); // Assuming you have a method to paint the maze background
+
+    mazeMap!.update(canvas);  // Update the maze if necessary
+
+    // Define text style for cell names
+    final textStyle = TextStyle(color: Colors.white, fontSize: 14);
+
+    // Loop over each cell to draw its name
+    for (int y = 0; y < maze.length; y++) {
+      for (int x = 0; x < maze[0].length; x++) {
+        // Get the cell name based on its coordinates
+        String cellName = getCellName(x, y);
+
+        // Create a text span with the cell name
+        final textSpan = TextSpan(text: cellName, style: textStyle);
+
+        // Create a text painter
+        final textPainter = TextPainter(
+          text: textSpan,
+          textDirection: TextDirection.ltr,
+        );
+
+        // Layout the text
+        textPainter.layout();
+
+        // Calculate the position to paint the cell name
+        Offset position = getPositionForCellName(x, y, blockSize.toDouble()); // Replace cellSize with actual cell size
+
+        // Paint the cell name at the calculated position
+        textPainter.paint(canvas, position);
+      }
+    }
+  }
+
+
+  String getCellName(int x, int y) {
+    // Cell names mapping for a 3x3 grid
+    Map<String, String> cellNames = {
+      '0,0': 'A', '0,1': 'B', '0,2': 'C',
+      '1,0': 'D', '1,1': 'E', '1,2': 'F',
+      '2,0': 'G', '2,1': 'H', '2,2': 'I',
+    };
+    return cellNames['$y,$x'] ?? ''; // Return an empty string if the cell is not found
+  }
+
+  Offset getPositionForCellName(int x, int y, double cellSize) {
+    // Assuming the cellSize is the length of each cell's side
+    // Adjust these values if necessary to center the text in each cell
+    double offsetX = (x * cellSize) + (cellSize / 2); // Center of the cell horizontally
+    double offsetY = (y * cellSize) + (cellSize / 2); // Center of the cell vertically
+    return Offset(offsetX, offsetY);
+  }
+
 
   void paintImage(Canvas canvas, Size size) async {
     draw(canvas, size);
