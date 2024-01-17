@@ -304,6 +304,27 @@ class _MazeEditState extends State<MazeEdit> with TickerProviderStateMixin {
                 ),
               ),
             ),
+            Padding(
+              padding: const EdgeInsets.only(top: 35.0),
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (context) => const MazeEdit(title: "SE420 Project")),
+                        (Route<dynamic> route) => false,
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.yellow, // Change the box color
+                ),
+                child: const Text(
+                  'Reset Rooms', // Change the text
+                  style: TextStyle(
+                    color: Colors.black// Change the text color
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),
